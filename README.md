@@ -1,8 +1,8 @@
-Java Basics
+Java Core
 ===================
 
 The tests are currently failing because of an output mismatch.
-Add missing code in App.java under src folder to make the tests pass.
+Add missing code in src folder to make the tests pass.
 
 Setup command
 N/A
