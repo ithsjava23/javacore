@@ -1,24 +1,44 @@
 {
   "tests": [
     {
-      "name": "Test G",
+      "name": "Basic Tests",
       "setup": "",
-      "run": "mvn test -Dtest=AppTest",
+      "run": "mvn test -Dgroups=basic",
       "input": "",
       "output": "",
       "comparison": "included",
       "timeout": 10,
-      "points": 5
+      "points": 1
     },
     {
-      "name": "Test VG",
+      "name": "When New",
       "setup": "",
-      "run": "mvn test -Dtest=PresentationTest",
+      "run": "mvn test -Dtest=WarehouseTest$WhenNew",
       "input": "",
       "output": "",
       "comparison": "included",
       "timeout": 10,
-      "points": 3
+      "points": 1
+    },
+    {
+      "name": "One product",
+      "setup": "",
+      "run": "mvn test -Dtest=WarehouseTest$AfterAddingProduct",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 10,
+      "points": 1
+    },
+    {
+      "name": "Multiple products",
+      "setup": "",
+      "run": "mvn test -Dtest=WarehouseTest$AfterAddingMultipleProducts",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 10,
+      "points": 1
     }
   ]
 }
