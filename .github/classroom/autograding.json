@@ -39,6 +39,16 @@
       "comparison": "included",
       "timeout": 10,
       "points": 1
+    },
+    {
+      "name": "Category",
+      "setup": "",
+      "run": "mvn test -Dtest=CategoryTest",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 10,
+      "points": 1
     }
   ]
 }

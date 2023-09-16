@@ -1,5 +1,6 @@
 package org.example;
 
+import org.example.warehouse.Category;
 import org.example.warehouse.ProductRecord;
 import org.example.warehouse.Warehouse;
 import org.junit.jupiter.api.*;
@@ -11,8 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -85,10 +85,11 @@ class WarehouseTest {
             assertThat(warehouse.getProducts()).isEmpty();
         }
 
+
     }
 
     @Nested
-    @DisplayName("after adding one product")
+    @DisplayName("adding one product")
     class AfterAddingProduct {
 
         ProductRecord addedProduct;
@@ -98,6 +99,47 @@ class WarehouseTest {
         void addingAProduct() {
             warehouse = Warehouse.getInstance("New warehouse");
             addedProduct = warehouse.addProduct(UUID.randomUUID(), "Milk", Category.of("Dairy"), BigDecimal.valueOf(999, 2));
+        }
+
+        @Test
+        @DisplayName("throws IllegalArgumentException for empty product name")
+        void throwsIllegalArgumentExceptionForNoProductname() {
+            assertThatThrownBy(() ->
+                    warehouse.addProduct(UUID.randomUUID(), "", Category.of("Test"), BigDecimal.valueOf(999, 2)))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("Product name can't be null or empty.");
+        }
+
+        @Test
+        @DisplayName("throws IllegalArgumentException for null product name")
+        void throwsIllegalArgumentExceptionForNullProductName() {
+            assertThatThrownBy(() ->
+                    warehouse.addProduct(UUID.randomUUID(), null, Category.of("Test"), BigDecimal.valueOf(999, 2)))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("Product name can't be null or empty.");
+        }
+
+        @Test
+        @DisplayName("throws IllegalArgumentException for null category")
+        void throwsIllegalArgumentExceptionForNullCategory() {
+            assertThatThrownBy(() ->
+                    warehouse.addProduct(UUID.randomUUID(), "Test", null, BigDecimal.valueOf(999, 2)))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("Category can't be null.");
+        }
+
+        @Test
+        @DisplayName("assigns id if null")
+        void assignsIdIfNull() {
+            var productRecord = warehouse.addProduct(null, "Test", Category.of("Test"), BigDecimal.valueOf(999, 2));
+            assertThat(productRecord.uuid()).isNotNull();
+        }
+
+        @Test
+        @DisplayName("sets price to 0 if null")
+        void setsPriceTo0IfNull() {
+            var productRecord = warehouse.addProduct(UUID.randomUUID(), "Test", Category.of("Test"), null);
+            assertThat(productRecord.price()).isEqualTo(BigDecimal.ZERO);
         }
 
         @Test
@@ -164,7 +206,20 @@ class WarehouseTest {
         }
 
         @Test
-        @DisplayName("get a map with all products for each category")
+        @DisplayName("find changed products is empty")
+        void findChangedProductsShouldBeEmpty() {
+            assertThat(warehouse.getChangedProducts()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("find changed products returns product")
+        void andChangingOneFindChangedProductsShouldReturnThatProduct() {
+            warehouse.updateProductPrice(addedProducts.get(1).uuid(), BigDecimal.valueOf(311, 2));
+            assertThat(warehouse.getChangedProducts()).containsOnly(addedProducts.get(1));
+        }
+
+        @Test
+        @DisplayName("group them by category")
         void getAMapWithAllProductsForEachCategory() {
             Map<Category, List<ProductRecord>> productsOfCategories =
                     Map.of(addedProducts.get(0).category(), List.of(addedProducts.get(0)),
@@ -191,7 +246,7 @@ class WarehouseTest {
         }
 
         @Test
-        @DisplayName("find a product belonging to a category")
+        @DisplayName("find all products belonging to a category")
         void findProductsBelongingToACategory() {
             assertThat(warehouse.getProductsBy(Category.of("Meat")))
                     .containsOnly(addedProducts.get(2));
@@ -204,246 +259,5 @@ class WarehouseTest {
             assertThat(warehouse.getProductsBy(Category.of("Meat")))
                     .containsOnly(addedProducts.get(2), addedProducts.get(3));
         }
-
-
     }
-
-
-//
-//    private Clock fixedClock;
-//    private LocalDateTime now;
-//
-//    @BeforeEach
-//    void setUp() {
-//        fixedClock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
-//        now = LocalDateTime.now(fixedClock);
-//    }
-//
-//
-//        @Test
-//        void Should_AddNewProduct() {
-//            Warehouse warehouse = new Warehouse(fixedClock);
-//
-//            Product product = warehouse.addNewProduct("TestProduct", ProductCategory.BOOKS, 5);
-//
-//            assertNotNull(product);
-//            assertEquals("TestProduct", product.name());
-//            assertEquals(ProductCategory.BOOKS, product.category());
-//            assertEquals(5, product.rating());
-//            assertNotNull(product.id());
-//            assertEquals(now, product.createdAt());
-//            assertEquals(now, product.updatedAt());
-//        }
-//
-//        @Test
-//        void Should_ThrowException_IfNameIsEmpty() {
-//            Warehouse warehouse = new Warehouse();
-//
-//            assertThrows(IllegalArgumentException.class, () ->
-//                    warehouse.addNewProduct("", ProductCategory.BOOKS, 5));
-//        }
-//
-//        @Test
-//        void Should_ThrowException_IfRatingIsInvalid() {
-//            Warehouse warehouse = new Warehouse();
-//
-//            assertThrows(IllegalArgumentException.class, () ->
-//                    warehouse.addNewProduct("Product", ProductCategory.BOOKS, -1));
-//            assertThrows(IllegalArgumentException.class, () ->
-//                    warehouse.addNewProduct("Product", ProductCategory.BOOKS, 11));
-//        }
-//
-//        @Test
-//        void Should_ReturnAllProducts() {
-//            Warehouse warehouse = new Warehouse(List.of(
-//                    new Product("1", "Product1", ProductCategory.BOOKS, 5, now, now),
-//                    new Product("2", "Product2", ProductCategory.BOOKS, 5, now, now)
-//            ));
-//
-//            List<Product> products = warehouse.getAllProducts();
-//
-//            int expected = 2;
-//            int actual = products.size();
-//            assertEquals(expected, actual);
-//        }
-//
-//        @Test
-//        void Should_ReturnProduct_IfExists() {
-//            Product mockProduct = new Product("1", "Product", ProductCategory.BOOKS, 5, now, now);
-//            Warehouse warehouse = new Warehouse(List.of(mockProduct));
-//
-//            Optional<Product> productOptional = warehouse.getProductById(mockProduct.id());
-//
-//            assertTrue(productOptional.isPresent());
-//            assertEquals(mockProduct, productOptional.get());
-//        }
-//
-//        @Test
-//        void Should_ReturnEmptyOptional_IfProductNotExists() {
-//            Warehouse warehouse = new Warehouse();
-//
-//            Optional<Product> productOptional = warehouse.getProductById("1");
-//
-//            assertTrue(productOptional.isEmpty());
-//        }
-//
-//        @Test
-//        void Should_UpdateAllProductDetails() {
-//            LocalDateTime createdAt = now.minusMinutes(1);
-//            Product mockProduct = new Product("1", "Product", ProductCategory.BOOKS, 2, createdAt, createdAt);
-//            Warehouse warehouse = new Warehouse(Arrays.asList(mockProduct), fixedClock);
-//
-//            Product updatedProduct = warehouse.updateProduct(mockProduct.id(), "UpdatedProduct", ProductCategory.VIDEO_GAMES, 5);
-//
-//            assertEquals("UpdatedProduct", updatedProduct.name());
-//            assertEquals(ProductCategory.VIDEO_GAMES, updatedProduct.category());
-//            assertEquals(5, updatedProduct.rating());
-//            assertTrue(updatedProduct.updatedAt().isAfter(createdAt));
-//        }
-//
-//        @Test
-//        void Should_ThrowException_IfInvalidUpdateProductDetails() {
-//            Product mockProduct = new Product("1", "Product", ProductCategory.BOOKS, 5, now, now);
-//            Warehouse warehouse = new Warehouse(Arrays.asList(mockProduct));
-//
-//            assertThrows(NoSuchElementException.class, () ->
-//                    warehouse.updateProduct("abc", "UpdatedProduct", ProductCategory.MUSIC, 2));
-//            assertThrows(IllegalArgumentException.class, () ->
-//                    warehouse.updateProduct(mockProduct.id(), "", ProductCategory.MUSIC, 2));
-//            assertThrows(IllegalArgumentException.class, () ->
-//                    warehouse.updateProduct(mockProduct.id(), "UpdatedProduct", ProductCategory.MUSIC, -1));
-//            assertThrows(IllegalArgumentException.class, () ->
-//                    warehouse.updateProduct(mockProduct.id(), "UpdatedProduct", ProductCategory.MUSIC, 11));
-//        }
-//
-//        @Test
-//        void Should_ReturnProductsInCategorySortedByAlphabeticalOrder() {
-//            Warehouse warehouse = new Warehouse(List.of(
-//                    new Product("1", "DFG", ProductCategory.BOOKS, 5, now, now),
-//                    new Product("2", "HIJ", ProductCategory.MUSIC, 6, now, now),
-//                    new Product("3", "ABC", ProductCategory.BOOKS, 8, now, now)
-//            ));
-//
-//            List<Product> booksProducts = warehouse.getProductsByCategory(ProductCategory.BOOKS);
-//
-//            int expected = 2;
-//            int actual = booksProducts.size();
-//            assertEquals(expected, actual);
-//            assertEquals('A', booksProducts.get(0).name().charAt(0));
-//        }
-//
-//        @Test
-//        void Should_ReturnProductsSinceSpecifiedDate() {
-//            Warehouse warehouse = new Warehouse(List.of(
-//                    new Product("1", "Product1", ProductCategory.BOOKS, 5, now.minusDays(5), now.minusDays(5)),
-//                    new Product("2", "Product2", ProductCategory.MUSIC, 6, now.minusDays(3), now.minusDays(3)),
-//                    new Product("3", "Product3", ProductCategory.BOOKS, 8, now, now)
-//            ));
-//
-//            LocalDate specifiedDate = now.toLocalDate().minusDays(3);
-//            List<Product> products = warehouse.getProductsSince(specifiedDate);
-//
-//            int expected = 2;
-//            int actual = products.size();
-//            assertEquals(expected, actual);
-//        }
-//
-//        @Test
-//        void Should_ReturnModifiedProducts() {
-//            Warehouse warehouse = new Warehouse(List.of(
-//                    new Product("1", "Product1", ProductCategory.BOOKS, 8, now, now.plusMinutes(1)),
-//                    new Product("2", "Product2", ProductCategory.BOOKS, 8, now, now),
-//                    new Product("3", "Product3", ProductCategory.BOOKS, 8, now, now.plusHours(1))
-//            ));
-//
-//            List<Product> products = warehouse.getModifiedProducts();
-//
-//            int expected = 2;
-//            int actual = products.size();
-//            assertEquals(expected, actual);
-//        }
-//
-//        @Test
-//        void Should_ReturnCategoriesTiedToAtLeast1Product() {
-//            Warehouse warehouse = new Warehouse(List.of(
-//                    new Product("1", "Product1", ProductCategory.BOOKS, 8, now, now),
-//                    new Product("2", "Product2", ProductCategory.VIDEO_GAMES, 4, now, now),
-//                    new Product("3", "Product3", ProductCategory.BOOKS, 3, now, now)
-//            ));
-//
-//            Set<ProductCategory> categories = warehouse.getCategoriesWithProducts();
-//
-//            int expected = 2;
-//            int actual = categories.size();
-//            assertEquals(expected, actual);
-//        }
-//
-//        @Test
-//        void Should_ReturnProductCountInSpecifiedCategory() {
-//            Warehouse warehouse = new Warehouse(List.of(
-//                    new Product("1", "Product1", ProductCategory.BOOKS, 8, now, now),
-//                    new Product("2", "Product2", ProductCategory.VIDEO_GAMES, 4, now, now),
-//                    new Product("3", "Product3", ProductCategory.BOOKS, 3, now, now)
-//            ));
-//
-//            long productCount = warehouse.getProductCountInCategory(ProductCategory.BOOKS);
-//
-//            int expected = 2;
-//            assertEquals(expected, productCount);
-//        }
-//
-//        @Test
-//        void Should_ReturnProductsWithMaxRatingThisMonthSortedByNewest() {
-//            Warehouse warehouse = new Warehouse(List.of(
-//                    new Product("1", "Product1", ProductCategory.BOOKS, 10, now.minusMonths(1), now.minusMonths(1)),
-//                    new Product("2", "Product2", ProductCategory.BOOKS, 10, now.minusMinutes(2), now.minusMinutes(2)),
-//                    new Product("3", "Product3", ProductCategory.BOOKS, 10, now.minusMinutes(1), now.minusMinutes(1)),
-//                    new Product("4", "Product4", ProductCategory.BOOKS, 9, now, now)
-//            ));
-//
-//            List<Product> products = warehouse.getTopRatedProductsThisMonth();
-//
-//            int expected = 2;
-//            int actual = products.size();
-//            assertEquals(expected, actual);
-//            boolean condition = products.get(0).createdAt().isAfter(products.get(1).createdAt());
-//            assertTrue(condition);
-//        }
-//
-//        @Test
-//        void Should_ReturnProductCountByFirstLetter() {
-//            Warehouse warehouse = new Warehouse(List.of(
-//                    new Product("1", "Abc", ProductCategory.BOOKS, 10, now, now),
-//                    new Product("2", "Bcd", ProductCategory.BOOKS, 10, now, now),
-//                    new Product("3", "Abc", ProductCategory.BOOKS, 10, now, now)
-//            ));
-//
-//            Map<Character, Long> productMap = warehouse.getProductCountByFirstLetter();
-//
-//            int expected = 2;
-//            int actual = productMap.size();
-//            assertEquals(expected, actual);
-//            assertEquals(2L, productMap.get('A'));
-//        }
-//
-//        @Test
-//        void Should_ReturnEmptyResult_When_NoProductsFound() {
-//            Warehouse warehouse = new Warehouse();
-//
-//            List<Product> allProducts = warehouse.getAllProducts();
-//            List<Product> booksProducts = warehouse.getProductsByCategory(ProductCategory.BOOKS);
-//            List<Product> productsSince = warehouse.getProductsSince(now.toLocalDate());
-//            List<Product> modifiedProducts = warehouse.getModifiedProducts();
-//            Set<ProductCategory> categories = warehouse.getCategoriesWithProducts();
-//            List<Product> topRatedProducts = warehouse.getTopRatedProductsThisMonth();
-//            Map<Character, Long> productMap = warehouse.getProductCountByFirstLetter();
-//
-//            assertTrue(allProducts.isEmpty());
-//            assertTrue(booksProducts.isEmpty());
-//            assertTrue(productsSince.isEmpty());
-//            assertTrue(modifiedProducts.isEmpty());
-//            assertTrue(categories.isEmpty());
-//            assertTrue(topRatedProducts.isEmpty());
-//            assertTrue(productMap.isEmpty());
-//        }
 }
