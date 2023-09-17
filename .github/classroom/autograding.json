@@ -3,7 +3,7 @@
     {
       "name": "Basic Tests",
       "setup": "",
-      "run": "mvn test -Dgroups=basic",
+      "run": "mvn test --quiet -Dgroups=basic",
       "input": "",
       "output": "",
       "comparison": "included",
@@ -13,7 +13,7 @@
     {
       "name": "When New",
       "setup": "",
-      "run": "mvn test -Dtest=WarehouseTest$WhenNew",
+      "run": "mvn test --quiet -Dtest=WarehouseTest$WhenNew",
       "input": "",
       "output": "",
       "comparison": "included",
@@ -23,7 +23,7 @@
     {
       "name": "One product",
       "setup": "",
-      "run": "mvn test -Dtest=WarehouseTest$AfterAddingProduct",
+      "run": "mvn test --quiet -Dtest=WarehouseTest$AfterAddingProduct",
       "input": "",
       "output": "",
       "comparison": "included",
@@ -43,7 +43,7 @@
     {
       "name": "Category",
       "setup": "",
-      "run": "mvn test -Dtest=CategoryTest",
+      "run": "mvn test --quiet -Dtest=CategoryTest",
       "input": "",
       "output": "",
       "comparison": "included",
