@@ -1,9 +1,8 @@
 Java Core
 ===================
 
-The tests are currently failing because of an output mismatch.
-Add missing code in src folder to make the tests pass.
-
+The tests are currently failing because of missing code.
+Implement missing classes and functionality so all tests are green.
 Setup command
 N/A
 
